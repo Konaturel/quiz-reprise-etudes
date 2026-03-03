@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dois-je reprendre mes études ?</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c; --cream: #f5f0e8; --gold: #c9a84c; --gold-light: #e8d5a3;
+    --rust: #c45c2e; --sage: #3d5a47; --muted: #7a756d; --card: #faf7f2; --border: #e0d9cc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--cream); color:var(--ink); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background-image: radial-gradient(ellipse at 20% 10%,rgba(201,168,76,.08) 0%,transparent 50%), radial-gradient(ellipse at 80% 90%,rgba(61,90,71,.07) 0%,transparent 50%);
+    pointer-events:none; z-index:0;
+  }
+  .container { max-width:760px; margin:0 auto; padding:40px 24px 80px; position:relative; z-index:1; }
+
+  .header { text-align:center; margin-bottom:48px; animation:fadeDown .7s ease both; }
+  .header-tag { display:inline-block; font-size:11px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); border:1px solid var(--gold-light); padding:6px 16px; border-radius:20px; margin-bottom:20px; }
+  h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3rem); font-weight:900; line-height:1.15; color:var(--ink); margin-bottom:16px; }
+  h1 em { font-style:italic; color:var(--gold); }
+  .subtitle { font-size:15px; color:var(--muted); line-height:1.6; max-width:480px; margin:0 auto; }
+
+  .progress-wrap { margin-bottom:36px; animation:fadeUp .5s ease .2s both; }
+  .progress-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .progress-label { font-size:12px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  .progress-count { font-family:'Playfair Display',serif; font-size:14px; color:var(--gold); font-weight:700; }
+  .progress-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--rust)); border-radius:2px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+
+  .question-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:40px; margin-bottom:24px; box-shadow:0 4px 24px rgba(15,14,12,.06); animation:fadeUp .5s ease both; }
+  .question-bloc { display:inline-block; font-size:10px; font-weight:500; letter-spacing:.15em; text-transform:uppercase; color:var(--sage); background:rgba(61,90,71,.1); padding:4px 12px; border-radius:10px; margin-bottom:16px; }
+  .question-text { font-family:'Playfair Display',serif; font-size:clamp(1.1rem,2.5vw,1.4rem); font-weight:700; line-height:1.4; color:var(--ink); margin-bottom:28px; }
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option { display:flex; align-items:center; gap:14px; padding:16px 20px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:all .2s ease; background:white; text-align:left; }
+  .option:hover { border-color:var(--gold); background:rgba(201,168,76,.04); transform:translateX(4px); }
+  .option.selected { border-color:var(--gold); background:rgba(201,168,76,.08); }
+  .option.selected .opt-dot { background:var(--gold); border-color:var(--gold); }
+  .option.selected .opt-dot::after { opacity:1; }
+  .opt-dot { width:18px; height:18px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+  .opt-dot::after { content:''; width:8px; height:8px; background:white; border-radius:50%; opacity:0; transition:opacity .2s; }
+  .opt-text { font-size:14px; color:var(--ink); line-height:1.4; }
+
+  .nav { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .btn { padding:14px 32px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; border:none; transition:all .2s ease; }
+  .btn-secondary { background:transparent; color:var(--muted); border:1.5px solid var(--border); }
+  .btn-secondary:hover { border-color:var(--muted); color:var(--ink); }
+  .btn-primary { background:var(--ink); color:var(--cream); margin-left:auto; }
+  .btn-primary:hover { background:var(--gold); color:var(--ink); transform:translateY(-1px); box-shadow:0 6px 20px rgba(201,168,76,.3); }
+  .btn-primary:disabled { opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  .email-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:52px 40px; text-align:center; box-shadow:0 4px 24px rgba(15,14,12,.06); animation:fadeUp .5s ease both; }
+  .email-icon { font-size:48px; margin-bottom:20px; display:block; }
+  .email-card h2 { font-family:'Playfair Display',serif; font-size:clamp(1.4rem,3vw,1.9rem); font-weight:900; color:var(--ink); margin-bottom:12px; line-height:1.3; }
+  .email-card h2 em { font-style:italic; color:var(--gold); }
+  .email-card > p { font-size:14px; color:var(--muted); line-height:1.65; max-width:420px; margin:0 auto 32px; }
+  .email-fields { display:flex; flex-direction:column; gap:12px; max-width:420px; margin:0 auto; }
+  .email-input { width:100%; padding:15px 18px; border:1.5px solid var(--border); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); background:white; outline:none; transition:border-color .2s; }
+  .email-input:focus { border-color:var(--gold); }
+  .email-input::placeholder { color:#b0a89e; }
+  .btn-email { width:100%; padding:16px; background:var(--ink); color:var(--cream); border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:all .2s; margin-top:4px; }
+  .btn-email:hover { background:var(--gold); color:var(--ink); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,.3); }
+  .btn-email:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+  .email-error { color:var(--rust); font-size:12px; text-align:left; display:none; }
+  .email-privacy { font-size:11px; color:var(--muted); margin-top:14px; text-align:center; max-width:420px; margin-left:auto; margin-right:auto; line-height:1.5; }
+
+  .result-card { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 8px 40px rgba(15,14,12,.1); animation:fadeUp .7s ease both; }
+  .result-banner { padding:48px 40px 36px; position:relative; overflow:hidden; }
+  .result-banner::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(61,90,71,.1)); }
+  .result-icon { font-size:48px; margin-bottom:16px; display:block; position:relative; }
+  .result-profile-tag { display:inline-block; font-size:11px; font-weight:500; letter-spacing:.15em; text-transform:uppercase; color:var(--gold); border:1px solid var(--gold); padding:5px 14px; border-radius:20px; margin-bottom:16px; position:relative; }
+  .result-title { font-family:'Playfair Display',serif; font-size:clamp(1.4rem,3vw,2rem); font-weight:900; line-height:1.2; color:var(--ink); margin-bottom:12px; position:relative; }
+  .result-verdict { font-size:14px; color:var(--muted); line-height:1.6; position:relative; }
+  .result-body { padding:32px 40px; }
+  .result-section { margin-bottom:28px; }
+  .result-section h3 { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--ink); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .result-section h3::before { content:''; width:20px; height:2px; background:var(--gold); display:inline-block; }
+  .result-insights { display:flex; flex-direction:column; gap:8px; }
+  .insight { display:flex; align-items:flex-start; gap:10px; font-size:13.5px; color:var(--ink); line-height:1.5; padding:10px 14px; background:rgba(201,168,76,.06); border-radius:8px; border-left:3px solid var(--gold-light); }
+  .insight-icon { font-size:14px; flex-shrink:0; margin-top:1px; }
+  .cta-block { background:var(--ink); border-radius:12px; padding:28px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .cta-text h4 { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--cream); font-weight:700; margin-bottom:6px; }
+  .cta-text p { font-size:13px; color:rgba(245,240,232,.6); line-height:1.5; }
+  .cta-price { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:900; color:var(--gold); }
+  .btn-cta { padding:14px 28px; background:var(--gold); color:var(--ink); border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:all .2s; white-space:nowrap; text-decoration:none; display:inline-block; }
+  .btn-cta:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,.4); }
+  .divider { height:1px; background:var(--border); margin:24px 0; }
+  .restart-link { display:block; text-align:center; margin-top:20px; font-size:13px; color:var(--muted); cursor:pointer; text-decoration:underline; text-underline-offset:3px; transition:color .2s; }
+  .restart-link:hover { color:var(--ink); }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
+  .fade-enter { animation:fadeUp .4s ease both; }
+
+  @media(max-width:600px){
+    .question-card,.email-card{padding:28px 20px}
+    .result-banner{padding:32px 24px 28px}
+    .result-body{padding:24px}
+    .cta-block{flex-direction:column;text-align:center}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-tag">✦ Diagnostic carrière</div>
+    <h1>Dois-je <em>vraiment</em><br>reprendre mes études ?</h1>
+    <p class="subtitle">10 questions pour identifier votre levier de progression le plus stratégique — et éviter de prendre la mauvaise décision.</p>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-wrap">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="progress-label">Progression</span>
+        <span class="progress-count" id="progress-count">1 / 10</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:10%"></div></div>
+    </div>
+    <div id="question-area"></div>
+    <div class="nav">
+      <button class="btn btn-secondary" id="btn-prev" onclick="prevQ()" style="display:none">← Précédent</button>
+      <button class="btn btn-primary"   id="btn-next" onclick="nextQ()" disabled>Continuer →</button>
+    </div>
+  </div>
+
+  <!-- EMAIL CAPTURE -->
+  <div id="email-area" style="display:none">
+    <div class="email-card">
+      <span class="email-icon">🔍</span>
+      <h2>Votre profil est <em>prêt</em>.</h2>
+      <p>Entrez votre prénom et votre email pour recevoir votre diagnostic complet — ainsi que des ressources exclusives adaptées à votre situation.</p>
+      <div class="email-fields">
+        <input class="email-input" type="text"  id="input-name"  placeholder="Votre prénom"        autocomplete="given-name" />
+        <input class="email-input" type="email" id="input-email" placeholder="Votre adresse email" autocomplete="email" />
+        <div class="email-error" id="email-error"></div>
+        <button class="btn-email" id="btn-email-submit" onclick="submitEmail()">Voir mon diagnostic →</button>
+      </div>
+      <p class="email-privacy">🔒 Vos données sont confidentielles. Pas de spam, uniquement du contenu utile à votre carrière. Désinscription en 1 clic.</p>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-area" style="display:none"></div>
+
+  <!-- iframe cachée pour soumission Kit sans CORS -->
+  <iframe id="ck-iframe" name="ck-iframe" style="display:none"></iframe>
+
+</div>
+
+<script>
+// ────────────────────────────────────────────
+// Kit : URL native du formulaire "Dois-je reprendre mes études ?"
+// Cette URL accepte les POST sans restriction CORS
+const CK_FORM_ACTION = 'https://study-journals.kit.com/e5c93db80f/submit';
+// ────────────────────────────────────────────
+
+const questions = [
+  {
+    bloc:"Bloc 1 — Situation actuelle",
+    text:"Depuis combien d'années travailles-tu dans le monde professionnel ?",
+    options:["Moins de 2 ans","2 à 5 ans","5 à 10 ans","Plus de 10 ans"],
+    scores:[{evol:1,spe:0,repo:0,inter:0},{evol:0,spe:2,repo:1,inter:1},{evol:0,spe:2,repo:2,inter:2},{evol:2,spe:1,repo:2,inter:0}]
+  },
+  {
+    bloc:"Bloc 1 — Situation actuelle",
+    text:"Comment décrirais-tu ton évolution professionnelle actuelle ?",
+    options:["Je suis clairement bloqué(e), je plafonne","Ça progresse, mais trop lentement à mon goût","Je veux accélérer sans vraiment être bloqué(e)","Mon évolution est satisfaisante, je veux juste m'ouvrir plus"],
+    scores:[{evol:0,spe:2,repo:2,inter:1},{evol:1,spe:2,repo:1,inter:1},{evol:0,spe:2,repo:1,inter:2},{evol:2,spe:0,repo:0,inter:2}]
+  },
+  {
+    bloc:"Bloc 1 — Situation actuelle",
+    text:"Si tu dois pointer un seul frein principal à ton évolution, c'est :",
+    options:["Un manque d'expertise ou de compétences techniques","Un manque de légitimité ou de diplôme reconnu","Un manque d'exposition à l'international","Un manque d'opportunités dans ma structure actuelle"],
+    scores:[{evol:0,spe:3,repo:1,inter:0},{evol:0,spe:2,repo:2,inter:1},{evol:0,spe:0,repo:1,inter:3},{evol:3,spe:0,repo:2,inter:0}]
+  },
+  {
+    bloc:"Bloc 2 — Objectif réel",
+    text:"Ton objectif principal dans les 3 prochaines années est :",
+    options:["Augmenter significativement mes revenus","Gagner en reconnaissance et en légitimité","Me repositionner dans un autre secteur ou domaine","Travailler à l'international ou internationaliser mon profil"],
+    scores:[{evol:1,spe:2,repo:1,inter:1},{evol:1,spe:3,repo:1,inter:0},{evol:0,spe:1,repo:3,inter:1},{evol:0,spe:0,repo:1,inter:3}]
+  },
+  {
+    bloc:"Bloc 2 — Objectif réel",
+    text:"Dans 5 ans, tu te vois principalement :",
+    options:["En France, dans le même secteur mais à un niveau supérieur","En France, mais dans un secteur ou rôle différent","À l'étranger ou entre plusieurs pays","Je ne sais pas encore, je veux garder toutes les portes ouvertes"],
+    scores:[{evol:2,spe:2,repo:0,inter:0},{evol:0,spe:1,repo:3,inter:0},{evol:0,spe:0,repo:0,inter:3},{evol:1,spe:1,repo:1,inter:1}]
+  },
+  {
+    bloc:"Bloc 3 — Tolérance au changement",
+    text:"Serais-tu prêt(e) à quitter temporairement ton emploi pour suivre une formation ?",
+    options:["Oui, sans hésiter si l'opportunité est bonne","Oui, mais seulement si c'est financé","Non, je veux absolument maintenir mes revenus","Je préfère trouver une solution sans rupture"],
+    scores:[{evol:0,spe:0,repo:1,inter:3},{evol:0,spe:2,repo:2,inter:2},{evol:1,spe:3,repo:0,inter:0},{evol:2,spe:3,repo:0,inter:0}]
+  },
+  {
+    bloc:"Bloc 3 — Tolérance au changement",
+    text:"Tes contraintes personnelles (famille, conjoint, logement) sont :",
+    options:["Importantes — déménager ou s'absenter serait compliqué","Modérées — quelques ajustements seraient nécessaires","Légères — j'ai une grande flexibilité","Nulles — je suis totalement libre"],
+    scores:[{evol:2,spe:2,repo:0,inter:0},{evol:1,spe:2,repo:1,inter:1},{evol:0,spe:1,repo:2,inter:2},{evol:0,spe:0,repo:2,inter:3}]
+  },
+  {
+    bloc:"Bloc 3 — Tolérance au changement",
+    text:"Financièrement, ta situation est :",
+    options:["Très stable — je peux investir plusieurs milliers d'euros","Stable mais prudent(e) — j'ai besoin d'un cofinancement","Juste — je dois trouver un financement externe","Je ne veux prendre aucun risque financier"],
+    scores:[{evol:0,spe:3,repo:2,inter:2},{evol:1,spe:2,repo:2,inter:2},{evol:1,spe:1,repo:1,inter:2},{evol:2,spe:2,repo:0,inter:0}]
+  },
+  {
+    bloc:"Bloc 4 — Capacité d'apprentissage",
+    text:"Es-tu discipliné(e) et autonome dans l'apprentissage ?",
+    options:["Très — je me fixe des objectifs et j'avance seul(e)","Plutôt — j'ai besoin de cadre mais je suis sérieux(se)","Moyennement — j'ai besoin de stimulation externe","Peu — j'apprends mieux en cours intensifs et en groupe"],
+    scores:[{evol:0,spe:3,repo:1,inter:1},{evol:1,spe:2,repo:2,inter:2},{evol:2,spe:1,repo:2,inter:2},{evol:1,spe:0,repo:2,inter:3}]
+  },
+  {
+    bloc:"Bloc 4 — Capacité d'apprentissage",
+    text:"Te sens-tu capable de gérer études, travail et vie personnelle en parallèle ?",
+    options:["Oui — j'ai une grande capacité de travail","Peut-être — avec une bonne organisation","Difficilement — je préfère une formation intensive et courte","Non — j'ai besoin de me concentrer sur une seule chose"],
+    scores:[{evol:0,spe:3,repo:0,inter:1},{evol:1,spe:3,repo:1,inter:1},{evol:1,spe:0,repo:3,inter:2},{evol:0,spe:0,repo:1,inter:3}]
+  }
+];
+
+const profiles = {
+  evol: {
+    icon:"🎯", tag:"Profil Évolution interne",
+    title:"Votre levier, ce n'est pas un diplôme.",
+    verdict:"Votre situation actuelle indique que le diplôme supplémentaire n'est pas votre priorité stratégique. Vos blocages sont internes — visibilité, négociation, positionnement. Ce sont des leviers que vous pouvez activer rapidement.",
+    reprise:false,
+    insights:[
+      {icon:"💼",text:"Discutez ouvertement de vos aspirations avec votre hiérarchie — vous n'avez probablement pas encore eu cette conversation."},
+      {icon:"📜",text:"Une certification ciblée (3-6 mois) peut suffire à légitimer une promotion sans sacrifier votre salaire."},
+      {icon:"🔄",text:"Un changement de structure pourrait débloquer votre situation plus vite que 2 ans d'études."},
+      {icon:"📈",text:"Impliquez-vous dans un projet transverse stratégique pour augmenter votre exposition interne."}
+    ],
+    cta:{title:"Reprendre ses études à distance",desc:"Si votre analyse évolue et que vous souhaitez monter en compétence sans sacrifier votre carrière, cette formation est votre meilleure option.",price:"247€",link:"#"}
+  },
+  spe: {
+    icon:"🎓", tag:"Profil Spécialisation nécessaire",
+    title:"Montez en compétence sans tout sacrifier.",
+    verdict:"Votre profil indique un besoin réel de spécialisation — mais sans rupture brutale. Les études à distance sont votre meilleur levier : vous maintenez vos revenus tout en construisant votre légitimité académique.",
+    reprise:true, voie:"à distance",
+    insights:[
+      {icon:"🏛️",text:"Des universités de rang mondial proposent aujourd'hui des masters entièrement en ligne, à des tarifs 3 à 5 fois inférieurs aux formations présentielles."},
+      {icon:"💰",text:"Votre employeur peut financer tout ou partie de votre formation — et la plupart des candidats ne le savent pas, ni comment le négocier."},
+      {icon:"⚡",text:"Avec la bonne stratégie d'apprentissage, il est possible de valider une année académique en y consacrant 8 à 12h par semaine."},
+      {icon:"📅",text:"La clé : une organisation béton pour absorber travail, études et vie personnelle sans s'effondrer au bout de 3 mois."}
+    ],
+    cta:{title:"Reprendre ses études à distance",desc:"Tout ce qu'il faut savoir pour réussir sa reprise d'études sans sacrifier son salaire ni son CV.",price:"247€",link:"#"}
+  },
+  repo: {
+    icon:"🔀", tag:"Profil Repositionnement stratégique",
+    title:"Un pivot ciblé, pas une remise à zéro.",
+    verdict:"Votre situation appelle un repositionnement stratégique de carrière. Un programme spécialisé et intensif — type LL.M ou mastère spécialisé en grande école — est votre meilleur levier : court, reconnu, et ultra-ciblé.",
+    reprise:true, voie:"en programme spécialisé intensif",
+    insights:[
+      {icon:"🏆",text:"Un LL.M ou mastère spécialisé dans une école de renom offre une crédibilité immédiate sur un nouveau marché cible."},
+      {icon:"🤝",text:"Ces programmes génèrent un réseau professionnel dense en très peu de temps — souvent plus efficace que 3 ans d'expérience."},
+      {icon:"🗺️",text:"La mobilité internationale y est intégrée : voyages d'études, intervenants étrangers, stages à l'international."},
+      {icon:"⏱️",text:"1 an d'investissement intense pour une rupture nette et assumée : c'est un prix acceptable pour un pivot stratégique réel."}
+    ],
+    cta:{title:"Reprendre ses études à distance",desc:"Les bases stratégiques pour bien choisir sa formation et maximiser l'impact de son repositionnement.",price:"247€",link:"#"}
+  },
+  inter: {
+    icon:"🌍", tag:"Profil Internationalisation pertinente",
+    title:"Votre prochaine étape est internationale.",
+    verdict:"Votre profil indique clairement une trajectoire internationale. Partir étudier à l'étranger — ou décrocher un financement pour le faire — est l'investissement le plus rentable que vous puissiez faire pour votre carrière.",
+    reprise:true, voie:"à l'étranger",
+    insights:[
+      {icon:"🎓",text:"Des centaines de bourses internationales financent intégralement des formations à l'étranger — y compris frais de scolarité ET allocation mensuelle."},
+      {icon:"🌐",text:"Étudier à l'étranger est le moyen le plus rapide d'acquérir un réseau international solide et une crédibilité globale."},
+      {icon:"💵",text:"Certains profils peuvent augmenter leur salaire de 40 à 80% en 2 ans simplement en s'établissant dans le bon pays."},
+      {icon:"📋",text:"La logistique semble complexe, mais avec la bonne méthode, tout se prépare en 6 mois — visa, logement, candidature, test de langue."}
+    ],
+    cta:{title:"Internationaliser sa carrière",desc:"Le guide complet pour partir étudier à l'étranger, décrocher une bourse et ouvrir votre carrière au monde.",price:"347€",link:"#"}
+  }
+};
+
+let current=0, answers=new Array(questions.length).fill(null), scores={evol:0,spe:0,repo:0,inter:0}, winnerProfile=null;
+
+function renderQuestion(){
+  const q=questions[current], pct=((current+1)/questions.length)*100;
+  document.getElementById('progress-count').textContent=`${current+1} / ${questions.length}`;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('btn-prev').style.display=current>0?'block':'none';
+  document.getElementById('btn-next').disabled=answers[current]===null;
+  document.getElementById('question-area').innerHTML=`
+    <div class="question-card fade-enter">
+      <div class="question-bloc">${q.bloc}</div>
+      <div class="question-text">${q.text}</div>
+      <div class="options">${q.options.map((opt,i)=>`
+        <div class="option ${answers[current]===i?'selected':''}" onclick="selectAnswer(${i})">
+          <div class="opt-dot"></div>
+          <div class="opt-text">${opt}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function selectAnswer(idx){ answers[current]=idx; document.getElementById('btn-next').disabled=false; renderQuestion(); }
+function nextQ(){ if(answers[current]===null) return; if(current<questions.length-1){current++;renderQuestion();}else{computeScores();showEmailCapture();} }
+function prevQ(){ if(current>0){current--;renderQuestion();} }
+
+function computeScores(){
+  scores={evol:0,spe:0,repo:0,inter:0};
+  for(let i=0;i<questions.length;i++){const s=questions[i].scores[answers[i]];scores.evol+=s.evol;scores.spe+=s.spe;scores.repo+=s.repo;scores.inter+=s.inter;}
+  winnerProfile=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+function showEmailCapture(){
+  document.getElementById('quiz-wrap').style.display='none';
+  document.getElementById('email-area').style.display='block';
+}
+
+function submitEmail(){
+  const name  = document.getElementById('input-name').value.trim();
+  const email = document.getElementById('input-email').value.trim();
+  const errorEl = document.getElementById('email-error');
+  const btn = document.getElementById('btn-email-submit');
+
+  if(!name){ showError("Merci d'entrer votre prénom."); return; }
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError("Merci d'entrer une adresse email valide."); return; }
+
+  errorEl.style.display='none';
+  btn.disabled=true;
+  btn.textContent='Envoi en cours…';
+
+  // Soumission via l'iframe cachée → URL native Kit → zéro CORS
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = CK_FORM_ACTION;
+  form.target = 'ck-iframe'; // pointe sur l'iframe cachée dans le HTML
+
+  // Champs attendus par Kit
+  [
+    ['email_address',        email],
+    ['first_name',           name],
+    ['fields[profil_quiz]',  winnerProfile]
+  ].forEach(([k,v]) => {
+    const inp = document.createElement('input');
+    inp.type='hidden'; inp.name=k; inp.value=v;
+    form.appendChild(inp);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+
+  // Laisser 1s à la requête pour partir, puis afficher le résultat
+  setTimeout(showResult, 1000);
+}
+
+function showError(msg){ const el=document.getElementById('email-error'); el.textContent=msg; el.style.display='block'; }
+
+function showResult(){
+  document.getElementById('email-area').style.display='none';
+  document.getElementById('result-area').style.display='block';
+  const p=profiles[winnerProfile];
+  const insightHTML=p.insights.map(ins=>`<div class="insight"><span class="insight-icon">${ins.icon}</span><span>${ins.text}</span></div>`).join('');
+  const repriseTag=p.reprise
+    ?`<div class="insight" style="background:rgba(61,90,71,.08);border-color:rgba(61,90,71,.3)"><span class="insight-icon">✅</span><span><strong>Verdict :</strong> La reprise d'études ${p.voie} est votre levier le plus cohérent.</span></div>`
+    :`<div class="insight" style="background:rgba(196,92,46,.07);border-color:rgba(196,92,46,.3)"><span class="insight-icon">❌</span><span><strong>Verdict :</strong> La reprise d'études n'est pas votre priorité stratégique actuellement.</span></div>`;
+  document.getElementById('result-area').innerHTML=`
+    <div class="result-card">
+      <div class="result-banner">
+        <span class="result-icon">${p.icon}</span>
+        <div class="result-profile-tag">${p.tag}</div>
+        <div class="result-title">${p.title}</div>
+        <div class="result-verdict">${p.verdict}</div>
+      </div>
+      <div class="result-body">
+        ${repriseTag}
+        <div class="divider"></div>
+        <div class="result-section">
+          <h3>Ce que ça implique concrètement</h3>
+          <div class="result-insights">${insightHTML}</div>
+        </div>
+        <div class="divider"></div>
+        <div class="cta-block">
+          <div class="cta-text">
+            <h4>${p.cta.title}</h4>
+            <p>${p.cta.desc}</p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div class="cta-price">${p.cta.price}</div>
+            <a class="btn-cta" href="${p.cta.link}">Découvrir la formation →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="restart-link" onclick="restartQuiz()">↺ Refaire le diagnostic</span>`;
+}
+
+function restartQuiz(){
+  current=0; answers=new Array(questions.length).fill(null); scores={evol:0,spe:0,repo:0,inter:0}; winnerProfile=null;
+  document.getElementById('result-area').style.display='none';
+  document.getElementById('email-area').style.display='none';
+  document.getElementById('quiz-wrap').style.display='block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
